@@ -26,5 +26,5 @@ def write_combinations(entry, file):
     
 #creates new file, since this file might not exist
 with open(sys.argv[1] + "combos", 'w+') as output, open(sys.argv[1], 'r') as file:
-    [write_combinations(line.strip('\r\n'), output)
-        for line in file.readlines() if(len(line) > 1)]
+    for line in file.readlines(): 
+        if(len(line) > 1): write_combinations(line.strip('\r\n'), output)
