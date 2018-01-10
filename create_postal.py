@@ -16,23 +16,15 @@ import sys
 #eg. 0A0 excluding the letters 'W' and 'Z'. 
 # ARGUMENTS:: the line of the file, and the file object.
 def write_combinations(entry, file):
-    
-    chars = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 
-            'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'X', 'Y')
-        
-    nums = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
-    
-    for i in nums:
-        for j in chars:
-            for k in nums:
-                file.write(entry + ' ' + i + j + k + "\r\n")
+    [file.write(entry + ' ' + str(i) + j + str(k) + "\r\n") 
+        for i in range(10) 
+        for j in ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 
+                  'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 
+                  'X', 'Y') 
+        for k in range(10)]
     file.write("\n\n\n")
     
-with(open(sys.argv[1], 'r')) as file:
-    codes = file.readlines()
-    
 #creates new file, since this file might not exist
-with(open(sys.argv[1] + "combos", 'w+')) as output:
-    for line in codes:
-        if(len(line) > 1):
-            write_combinations(line.strip('\r\n'), output)
+with open(sys.argv[1] + "combos", 'w+') as output, open(sys.argv[1], 'r') as file:
+    [write_combinations(line.strip('\r\n'), output)
+        for line in file.readlines() if(len(line) > 1)]
