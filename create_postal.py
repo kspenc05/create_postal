@@ -15,16 +15,16 @@ import sys
 # PURPOSE:: writes to file all number, letter, number combinations 
 #eg. 0A0 excluding the letters 'W' and 'Z'. 
 # ARGUMENTS:: the line of the file, and the file object.
-def write_combinations(entry, file):
-    [file.write(entry + ' ' + str(i) + j + str(k) + "\r\n") 
-        for i in range(10) 
-        for j in ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 
-                  'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 
-                  'X', 'Y') 
-        for k in range(10)]
-    file.write("\n\n\n")
+def write_combinations(entry, file, location):
+    digits = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
+    
+    [file.write(entry + ' ' + i + j + k + " " + location + "\r\n") 
+        for i in digits
+        for j in ('A', 'B', 'C', 'E', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 
+            'R', 'S', 'T', 'V', 'W', 'X', 'Y', 'Z') 
+        for k in digits]
+    file.write("\n")
     
 #creates new file, since this file might not exist
-with open(sys.argv[1] + "combos", 'w+') as output, open(sys.argv[1], 'r') as file:
-    for line in file.readlines(): 
-        if(len(line) > 1): write_combinations(line.strip('\r\n'), output)
+with open("combinations.txt", 'a+') as output:
+    write_combinations(sys.argv[1], output, sys.argv[2])
