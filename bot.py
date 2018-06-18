@@ -31,6 +31,9 @@ def check_postal(br, code):
     resp = br.submit().read()
     print resp
     
+    #some variables to hold each character in the string, where each truth value (T or F) 
+    # is related to that service provided by rogers. eg. if tv == 't', then 
+    # tv is offered by Rogers at that postal code area else if tv == 'f' it is not. 
     tv = resp.find(":") + 1
     home = resp.find(":", tv) + 1
     internet = resp.find(":", home) + 1
@@ -43,10 +46,8 @@ def check_postal(br, code):
     else:
         ultimate = resp[-7]
     
-    return ( "," + getYorN( resp[tv] ) + 
-        getYorN( resp[home] ) +  
-        getYorN( resp[internet] ) + 
-        getYorN( resp[wrong_postal] ) + 
+    return ( "," + getYorN( resp[tv] ) + getYorN( resp[home] ) +  
+        getYorN( resp[internet] ) + getYorN( resp[wrong_postal] ) + 
         getYorN( ultimate ) )
 
 def get_town_name(s):
