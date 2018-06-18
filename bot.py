@@ -1,10 +1,9 @@
 #!/usr/bin/python
-import os
 import mechanize
 import time
 import datetime
 
-#PURPOSE:: to change 't's into "Y" or "N", the comma is added at the end 
+#PURPOSE:: to change 't's into "Y"s and 'f's into "N"s, the comma is added at the end 
 #since this response will be outputted to a comma delimited text file.
 def getYorN(string):
     #The "true" in the string that rogers returns will always start
@@ -15,23 +14,21 @@ def getYorN(string):
         return "N,"
 
 #PURPOSE:: to check if a given postal code is serviced by rogers
-#ARGUMENTS:: the connection, and the postal code.
-#RETURNS:: the response from Rogers, formatted so that it may fit into a comma
-#delimited csv file.
+#ARGUMENTS:: the web connection, and the postal code.
+#RETURNS:: the response from Rogers, formatted so that each value is separated
+#by a comma (for a comma delimited file)
 def check_postal(br, code):
     br.open("http://www.rogers.com/consumer/internet")
     br.select_form(nr = 0)
+    
     check_postal = br.forms()[0].controls[0]
-
     check_postal.readonly = False
     check_postal.value =  code
     print code
 
-    resp = br.submit().read()
-    
     # returns the required yes or no responses (if given true or false) and whether
     # the postal code is incorrect or not.
-    
+    resp = br.submit().read()
     print resp
     
     tv = resp.find(":") + 1
@@ -46,10 +43,10 @@ def check_postal(br, code):
     else:
         ultimate = resp[-7]
     
-    return ( "," + getYorN( resp[tv:tv + 1] ) + 
-        getYorN( resp[home:home + 1] ) +  
-        getYorN( resp[internet: internet + 1] ) + 
-        getYorN( resp[wrong_postal: wrong_postal + 1] ) + 
+    return ( "," + getYorN( resp[tv] ) + 
+        getYorN( resp[home] ) +  
+        getYorN( resp[internet] ) + 
+        getYorN( resp[wrong_postal] ) + 
         getYorN( ultimate ) )
 
 def get_town_name(s):
@@ -87,13 +84,13 @@ with open("checkpoint.txt", "w") as checkpoint, open("checked.txt", "a+") as che
     #I assumed that the number of links will not change, this is the reason I 
     #used negative indexes. If those change, these number literals will need to change. 
     links = zipcode.links()[32:-17]
+    
     for i in range(town_num, len(links)):
         town = links[i]
-    
+        zipcode.follow_link(town)
+        
         place_name = get_town_name(town.text)
         print place_name + "\n"
-    
-        zipcode.follow_link(town)
         
         #These 2 lines below are To fix the previous problem where it would crash when 
         # there were more than 1 area code, and it would think one of the area 
@@ -104,7 +101,6 @@ with open("checkpoint.txt", "w") as checkpoint, open("checked.txt", "a+") as che
         postals = zipcode.links()[start:-17]
         
         for j in range(postal_num, len(postals)):  
-            
             #when no arg is given, split() will split words based on spaces
             #NOTE:: I also got rid of previous print command, 
             # because it would print the postal code twice on the screen
@@ -116,8 +112,8 @@ with open("checkpoint.txt", "w") as checkpoint, open("checked.txt", "a+") as che
             resp = check_postal(rogers, words[0] + " " + words[1])
             
             #to communicate with the user the progress the checker has made
-            print words[0] + " " + words[1], ",", place_name, resp
-            print "total: ", total, "\nJust checked:",  words[0], " ", words[1], "\n ", place_name, " time running: ", datetime.datetime.fromtimestamp(time.time() - beg) 
+            print words[0], " ", words[1], ",", place_name, resp
+            print "total: ", total, "\nJust checked:",  words[0], " ", words[1], "\n ", place_name, " time running: ", datetime.datetime.fromtimestamp(time.time() - beg), "\n"
             
             postal_num += 1
             total += 1
