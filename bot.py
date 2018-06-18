@@ -4,20 +4,28 @@ import mechanize
 import time
 import datetime
 
+#PURPOSE:: to change 't's into "Y" or "N", the comma is added at the end 
+#since this response will be outputted to a comma delimited text file.
 def getYorN(string):
+    #The "true" in the string that rogers returns will always start
+    # with a lowercase 't', I've checked, don't change this. 
     if string == 't':
         return "Y,"
     else:
         return "N,"
 
+#PURPOSE:: to check if a given postal code is serviced by rogers
+#ARGUMENTS:: the connection, and the postal code.
+#RETURNS:: the response from Rogers, formatted so that it may fit into a comma
+#delimited csv file.
 def check_postal(br, code):
     br.open("http://www.rogers.com/consumer/internet")
     br.select_form(nr = 0)
     check_postal = br.forms()[0].controls[0]
 
     check_postal.readonly = False
-    print code
     check_postal.value =  code
+    print code
 
     resp = br.submit().read()
     
@@ -31,6 +39,8 @@ def check_postal(br, code):
     internet = resp.find(":", home) + 1
     wrong_postal = resp.find(":", internet) + 1
     
+    #Since the part of the response containing "ultimate Internet" will always 
+    #be at the end of the string
     if(resp[:-6] == 't'):   
         ultimate = resp[-6]
     else:
@@ -74,6 +84,8 @@ with open("checkpoint.txt", "w") as checkpoint, open("checked.txt", "a+") as che
     #total time spent checking postal codes:
     beg = time.time()
     
+    #I assumed that the number of links will not change, this is the reason I 
+    #used negative indexes. If those change, these number literals will need to change. 
     links = zipcode.links()[32:-17]
     for i in range(town_num, len(links)):
         town = links[i]
@@ -82,26 +94,21 @@ with open("checkpoint.txt", "w") as checkpoint, open("checked.txt", "a+") as che
         print place_name + "\n"
     
         zipcode.follow_link(town)
-    
-        #print br.links()[27:]
         
-        #NOTE:: if there is more than 1 area code per city,
-        #postals will begin at an area code instead of a postal code. This will
-        #cause an index out of range exception when splitting the string
-        
+        #These 2 lines below are To fix the previous problem where it would crash when 
+        # there were more than 1 area code, and it would think one of the area 
+        # codes is a postal code
         start = 27
-        
         while(len(zipcode.links()[start].text) != 7): start += 1
         
         postals = zipcode.links()[start:-17]
         
         for j in range(postal_num, len(postals)):  
-            postal = postals[j].text
-            print postal + "\n"
-
-            #by default, split() will split words based on spaces, 
-            #we are splitting based on spaces here
-            words = postal.split()
+            
+            #when no arg is given, split() will split words based on spaces
+            #NOTE:: I also got rid of previous print command, 
+            # because it would print the postal code twice on the screen
+            words = postals[j].text.split()
 
             #timer so the server thinks my bot is a human or at least not a pest
             time.sleep(5)
@@ -115,14 +122,15 @@ with open("checkpoint.txt", "w") as checkpoint, open("checked.txt", "a+") as che
             postal_num += 1
             total += 1
             
-            #NOTE: all that should be in checkpoint at any given time is
+            #NOTE: all that should be in the checkpoint file at any given time is the
             # town number, the number of previously checked postal codes for that
             # town, and then the total number of postal codes checked
+            
+            #Whenever it writes to this file, it clears everything before it,
+            #which is why I used truncate()
             checkpoint.seek(0)
             checkpoint.truncate()
-            checkpoint.write(str(town_num) + "\n")
-            checkpoint.write(str(postal_num) + "\n")
-            checkpoint.write(str(total) + "\n") 
+            checkpoint.write(str(town_num) + "\n" + str(postal_num) + "\n" + str(total) + "\n") 
             
             checked.write(words[0] + " " + words[1] + "," + place_name + resp + "\n")
         postal_num = 0
