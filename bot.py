@@ -37,7 +37,12 @@ def check_postal(br, code):
     tv = resp.find(":") + 1
     home = resp.find(":", tv) + 1
     internet = resp.find(":", home) + 1
-    wrong_postal = resp.find(":", internet) + 1
+    
+    #Whether or not there was an error when getting the data is far more important
+    #than if the postal code was in the incorrect format or wrong (it seems like it just checks format,
+    #not if the postal code is used by someone living in Ontario. 
+    error = resp.find(":", internet) + 1
+    error = resp.find(":", error) + 1
     
     #Since the part of the response containing "ultimate Internet" will always 
     #be at the end of the string
@@ -47,7 +52,7 @@ def check_postal(br, code):
         ultimate = resp[-7]
     
     return ( "," + getYorN( resp[tv] ) + getYorN( resp[home] ) +  
-        getYorN( resp[internet] ) + getYorN( resp[wrong_postal] ) + 
+        getYorN( resp[internet] ) + getYorN( resp[error] ) + 
         getYorN( ultimate ) )
 
 def get_town_name(s):
@@ -79,7 +84,7 @@ with open("checkpoint.txt", "r+") as checkpoint:
     
 #checking each postal code, based on the combinations created
 with open("checkpoint.txt", "w") as checkpoint, open("checked.txt", "a+") as checked:
-    #total time spent checking postal codes:
+    #start of the running time spent on checking postal codes:
     beg = time.time()
     
     #I assumed that the number of links will not change, this is the reason I 
@@ -94,8 +99,8 @@ with open("checkpoint.txt", "w") as checkpoint, open("checked.txt", "a+") as che
         print place_name + "\n"
         
         #These 2 lines below are To fix the previous problem where it would crash when 
-        # there were more than 1 area code, and it would think one of the area 
-        # codes is a postal code
+        # there were more than 1 area code, and it would then think one of the area 
+        # codes IS a postal code
         start = 27
         while(len(zipcode.links()[start].text) != 7): start += 1
         
