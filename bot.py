@@ -31,7 +31,7 @@ def check_postal(br, code):
     internet = resp.find(":", home) + 1
     wrong_postal = resp.find(":", internet) + 1
     
-    if(resp[:-6] == 't'):
+    if(resp[:-6] == 't'):   
         ultimate = resp[-6]
     else:
         ultimate = resp[-7]
@@ -84,8 +84,17 @@ with open("checkpoint.txt", "w") as checkpoint, open("checked.txt", "a+") as che
         zipcode.follow_link(town)
     
         #print br.links()[27:]
-    
-        postals = zipcode.links()[27:-17]
+        
+        #NOTE:: if there is more than 1 area code per city,
+        #postals will begin at an area code instead of a postal code. This will
+        #cause an index out of range exception when splitting the string
+        
+        start = 27
+        
+        while(len(zipcode.links()[start].text) != 7): start += 1
+        
+        postals = zipcode.links()[start:-17]
+        
         for j in range(postal_num, len(postals)):  
             postal = postals[j].text
             print postal + "\n"
