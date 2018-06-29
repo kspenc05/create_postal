@@ -52,7 +52,7 @@ def check_postal(br, code):
     else:
         ultimate = -7
     
-    return ( "," + getYorN( resp[tv] ) + getYorN( resp[home] ) +  
+    return ( getYorN( resp[tv] ) + getYorN( resp[home] ) +  
         getYorN( resp[internet] ) + getYorN( resp[error] ) + 
         getYorN( resp[ultimate] ) )
 
@@ -72,14 +72,13 @@ zipcode.set_handle_robots(False)
 zipcode.set_handle_refresh(False)
 zipcode.addheaders = [('User-agent', 
     'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
-
 zipcode.open('https://www.zip-codes.com/canadian/province.asp?province=on')
 
 #so the script can resume from where it left off from the last time it was ran
+#Each of the three values needed is on a separate line, so it reads them in 
+#converts each, and assigns it to a variable. 
 with open("checkpoint.txt", "r+") as checkpoint:
-    town_num = int(checkpoint.readline())
-    postal_num = int(checkpoint.readline())
-    total = int(checkpoint.readline())
+    town_num, postal_num, total = [int(i) for i in checkpoint.readlines()]
     
 #checking each postal code, based on the combinations created
 with open("checkpoint.txt", "w") as checkpoint, open("checked.txt", "a+") as checked:
@@ -91,15 +90,14 @@ with open("checkpoint.txt", "w") as checkpoint, open("checked.txt", "a+") as che
     links = zipcode.links()[32:-17]
     
     for i in range(town_num, len(links)):
-        town = links[i]
-        zipcode.follow_link(town)
-        
-        place_name = get_town_name(town.text)
+        place_name = get_town_name(links[i].text)
         print place_name + "\n"
         
+        zipcode.follow_link(links[i])
+        
         #To fix an error where no postal codes or area codes appear,
-        # if no area codes, then no postal codes, so this index will usually
-        # be the same. If none, move to the next municipality in the list
+        # if there are no area codes, then there are no postal codes, so then it
+        # should move to the next municipality in the list.
         if(zipcode.links()[26].text == "Canadian Postal Code Database"):
             continue
         
@@ -109,22 +107,22 @@ with open("checkpoint.txt", "w") as checkpoint, open("checked.txt", "a+") as che
         start = 27
         while(len(zipcode.links()[start].text) != 7):
             start += 1
-
+            
         postals = zipcode.links()[start:-17]
         
-        for j in range(postal_num, len(postals)):  
+        for j in range(postal_num, len(postals)):
+            
+            #timer so the server thinks my bot is a human or at least not a pest
+            time.sleep(5)
+            
             #when no arg is given, split() will split words based on spaces
             #NOTE:: I also got rid of previous print command, 
             # because it would print the postal code twice on the screen
             words = postals[j].text.split()
-
-            #timer so the server thinks my bot is a human or at least not a pest
-            time.sleep(5)
-        
             resp = check_postal(rogers, words[0] + " " + words[1])
             
             #to communicate with the user the progress the checker has made
-            print words[0], " ", words[1], ",", place_name, resp
+            print words[0], " ", words[1], ",", place_name, ",", resp
             print "total: ", total, "\nJust checked:",  words[0], " ", words[1], "\n ", place_name, " time running: ", datetime.datetime.fromtimestamp(time.time() - beg), "\n"
             
             postal_num += 1
@@ -138,8 +136,8 @@ with open("checkpoint.txt", "w") as checkpoint, open("checked.txt", "a+") as che
             #which is why I used truncate()
             checkpoint.seek(0)
             checkpoint.truncate()
-            checkpoint.write(str(town_num) + "\n" + str(postal_num) + "\n" + str(total) + "\n") 
+            checkpoint.write("%s\n%s\n%s\n" % (str(town_num), str(postal_num), str(total)))
             
-            checked.write(words[0] + " " + words[1] + "," + place_name + resp + "\n")
+            checked.write("%s %s,%s,%s\n" % (words[0], words[1], place_name, resp))
         postal_num = 0
         town_num += 1
