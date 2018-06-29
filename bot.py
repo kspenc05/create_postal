@@ -77,7 +77,7 @@ zipcode.open('https://www.zip-codes.com/canadian/province.asp?province=on')
 #so the script can resume from where it left off from the last time it was ran
 #Each of the three values needed is on a separate line, so it reads them in 
 #converts each, and assigns it to a variable. 
-with open("checkpoint.txt", "r+") as checkpoint:
+with open("checkpoint.txt", "r") as checkpoint:
     town_num, postal_num, total = [int(i) for i in checkpoint.readlines()]
     
 #checking each postal code, based on the combinations created
