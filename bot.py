@@ -81,7 +81,7 @@ with open("checkpoint.txt", "r") as checkpoint:
     town_num, postal_num, total = [int(i) for i in checkpoint.readlines()]
     
 #checking each postal code, based on the combinations created
-with open("checkpoint.txt", "w") as checkpoint, open("checked.txt", "a+") as checked:
+with open("checkpoint.txt", "w") as checkpoint, open("checked.txt", "a") as checked:
     #start of the running time spent on checking postal codes:
     beg = time.time()
     
@@ -132,10 +132,9 @@ with open("checkpoint.txt", "w") as checkpoint, open("checked.txt", "a+") as che
             # town number, the number of previously checked postal codes for that
             # town, and then the total number of postal codes checked
             
-            #Whenever it writes to this file, it clears everything before it,
-            #which is why I used truncate()
+            #since I'm using 'w', file.truncate() is not needed here (is redundant), 
+            #it automatically clears all lines when I writing to this file in the 'w' file mode. 
             checkpoint.seek(0)
-            checkpoint.truncate()
             checkpoint.write("%s\n%s\n%s\n" % (str(town_num), str(postal_num), str(total)))
             
             checked.write("%s %s,%s,%s\n" % (words[0], words[1], place_name, resp))
