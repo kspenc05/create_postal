@@ -23,7 +23,7 @@ def check_postal(br, code):
     
     check_postal = br.forms()[0].controls[0]
     check_postal.readonly = False
-    check_postal.value =  code
+    check_postal.value = code
     print code
 
     # returns the required yes or no responses (if given true or false) and whether
@@ -77,8 +77,12 @@ zipcode.open('https://www.zip-codes.com/canadian/province.asp?province=on')
 #so the script can resume from where it left off from the last time it was ran
 #Each of the three values needed is on a separate line, so it reads them in 
 #converts each, and assigns it to a variable. 
+#try: 
 with open("checkpoint.txt", "r") as checkpoint:
-    town_num, postal_num, total = [int(i) for i in checkpoint.readlines()]
+    town_num, postal_num, total = [int(i) for i in checkpoint.readlines()[0:3] ]
+#except:
+#    print "Error: Invalid format in the checkpoint file","Format should be like this with no spaces: \"5\n6\n9\n\""
+#    return
     
 #checking each postal code, based on the combinations created
 with open("checkpoint.txt", "w") as checkpoint, open("checked.txt", "a") as checked:
@@ -134,6 +138,7 @@ with open("checkpoint.txt", "w") as checkpoint, open("checked.txt", "a") as chec
             
             #since I'm using 'w', file.truncate() is not needed here (is redundant), 
             #it automatically clears all lines when I writing to this file in the 'w' file mode. 
+            #occasionally does not save the correct format, but should work 90% of the time
             checkpoint.seek(0)
             checkpoint.write("%s\n%s\n%s\n" % (str(town_num), str(postal_num), str(total)))
             
